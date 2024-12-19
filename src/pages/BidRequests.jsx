@@ -15,6 +15,37 @@ const BidRequests = () => {
     .then(data=>setMyBitsreq(data.data))
 
   },[])
+
+
+
+
+  let handleStatusChanged=(id,prevStatus,status)=>{
+    console.table({id,prevStatus,status})
+
+    if(prevStatus === status || prevStatus=== "Complete"){
+      return alert("not alowed")
+    }
+
+    if(prevStatus==="In Progress"){
+      return alert("not allowed")
+    }
+    if(prevStatus==="Rejected"){
+      return alert("not allowed")
+    }
+    axios
+    .put(`http://localhost:9000/updatedStatusBit/${id}`, { status: status })
+    .then((response) => {
+      if (response.data.modifiedCount > 0) {
+        setMyBitsreq((prevBids) =>
+          prevBids.map((bid) =>
+            bid._id === id ? { ...bid, status: status } : bid
+          )
+        );
+        alert(`Status updated to ${status}`);
+      }
+    })
+
+  }
   return (
     <section className='container px-4 mx-auto my-12 overflow-x-hidden'>
       <div className='flex items-center gap-x-3'>
@@ -114,8 +145,13 @@ const BidRequests = () => {
         </div>
       </td>
       <td className="px-4 py-4 text-sm whitespace-nowrap">
+
+        {/* set inProgess */}
         <div className="flex items-center gap-x-6">
           <button
+          onClick={()=>handleStatusChanged(item._id,item.status,"In Progress")}
+          disabled={item.status ==="In Progress" || item.status ==="Rejected" || item.status ==="Complete"}
+
             className="disabled:cursor-not-allowed text-gray-500 transition-colors duration-200 hover:text-red-500 focus:outline-none"
           >
             <svg
@@ -133,8 +169,10 @@ const BidRequests = () => {
               />
             </svg>
           </button>
-
+     {/* // set Rejected */}
           <button
+          onClick={()=>handleStatusChanged(item._id,item.status,"Rejected")}
+          disabled={item.status ==="Rejected" || item.status==="In Progress" || item.status ==="Complete"}
             className="disabled:cursor-not-allowed text-gray-500 transition-colors duration-200 hover:text-yellow-500 focus:outline-none"
           >
             <svg

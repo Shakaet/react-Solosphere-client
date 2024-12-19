@@ -12,7 +12,7 @@ const TabCategories = () => {
 
 
   useEffect(()=>{
-    fetch("http://localhost:9000/add-jobs")
+    fetch("http://localhost:9000/homeJob")
     .then(res=>res.json())
     .then(data=>setData(data))
   },[])

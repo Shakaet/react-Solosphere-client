@@ -11,6 +11,7 @@ import {
   updateProfile,
 } from 'firebase/auth'
 import { app } from '../firebase/firebase.config'
+import axios from 'axios'
 
 export const AuthContext = createContext(null)
 const auth = getAuth(app)
@@ -47,17 +48,44 @@ const AuthProvider = ({ children }) => {
     })
   }
 
-  // onAuthStateChange
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, currentUser => {
-      setUser(currentUser)
-      console.log('CurrentUser-->', currentUser)
-      setLoading(false)
-    })
-    return () => {
-      return unsubscribe()
-    }
-  }, [])
+  useEffect(()=>{
+    let unsubscribed= onAuthStateChanged(auth, (CurrentUser) => {
+  
+       setUser(CurrentUser)
+      //  console.log("current",CurrentUser?.email)
+
+
+       if(CurrentUser){
+        let user={email:CurrentUser?.email}
+
+        axios.post("http://localhost:9000/jwt",user,{withCredentials:true})
+        .then(res=>{
+          // console.log("login",res.data)
+          setLoading(false)
+        })
+       }
+
+       else{
+        axios.post("http://localhost:9000/logout",{},{withCredentials:true})
+        .then(res=>{
+          // console.log("logout",res.data)
+          setLoading(false)
+        })
+       }
+
+       
+       
+       
+       
+      //  // wait,put in in the correct place
+      //  setLoading(false)
+      });
+
+      return ()=>{
+        unsubscribed()
+      }
+},[])
+
 
   const authInfo = {
     user,

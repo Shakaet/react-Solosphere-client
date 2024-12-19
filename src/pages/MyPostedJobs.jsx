@@ -3,21 +3,26 @@ import { Link } from 'react-router-dom'
 import { AuthContext } from '../providers/AuthProvider'
 import { data } from 'autoprefixer'
 import Swal from 'sweetalert2';
+import UseAxios from '../components/UseAxios';
 
 const MyPostedJobs = () => {
 
 
   let {user}= useContext(AuthContext)
+  let axiosInstance=UseAxios()
 
   let [myPostedData,setMyPostedData]=useState([])
 
   useEffect(()=>{
-    fetch(`http://localhost:9000/my-posted-job/${user.email}`)
-    .then(res=>res.json())
-    .then(data=>setMyPostedData(data))
+    // fetch(`http://localhost:9000/my-posted-job/${user.email}`)
+    // .then(res=>res.json())
+    // .then(data=>setMyPostedData(data))
+
+    axiosInstance.get(`/my-posted-job/${user?.email}`)
+    .then(res=>setMyPostedData(res.data))
 
     
-  },[user.email])
+  },[axiosInstance, user.email])
 
 
   let handleDelete = (id) => {

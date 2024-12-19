@@ -12,7 +12,7 @@ const MyBids = () => {
 
   useEffect(()=>{
 
-    axios.get(`http://localhost:9000/bit-collection/${user?.email}`)
+    axios.get(`http://localhost:9000/bit/${user?.email}`)
     .then(data=>setMyBits(data.data))
 
   },[])
@@ -96,7 +96,7 @@ const MyBids = () => {
                 <td className='px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap'>
                   <div className='inline-flex items-center px-3 py-1 rounded-full gap-x-2 bg-yellow-100/60 text-yellow-500'>
                     <span className='h-1.5 w-1.5 rounded-full bg-yellow-500'></span>
-                    <h2 className='text-sm font-normal'>Pending</h2>
+                    <h2 className='text-sm font-normal'>{item.status}</h2>
                   </div>
                 </td>
                 <td className='px-4 py-4 text-sm whitespace-nowrap'>

@@ -2,13 +2,16 @@ import { useContext, useEffect, useState } from 'react'
 
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { format } from 'date-fns';
 import { AuthContext } from '../providers/AuthProvider';
+import axios from 'axios';
 
 const JobDetails = () => {
   let {user}= useContext(AuthContext)
   const [startDate, setStartDate] = useState(new Date())
+
+  let nav=useNavigate()
 
 
   let {id}= useParams()
@@ -31,6 +34,9 @@ const JobDetails = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+
+
+   
   
     // Extract form values
     const price = formData.get('price');
@@ -38,6 +44,13 @@ const JobDetails = () => {
     console.log(email)
     const comment = formData.get('comment');
     const selectedDeadline = startDate;
+
+     // email validation
+     if(user?.email === detailsData?.email){
+      alert("sorry, you can't apply for the bid")
+      return
+    }
+
   
     // Validate price
     const minPrice = Number(detailsData.minPrice);
@@ -68,33 +81,63 @@ const JobDetails = () => {
       jobId:id,
       jobTitle:detailsData.jobTitle,
       category:detailsData.category,
+      status:"pending",
+      buyerMail:detailsData?.email
     };
   
     console.log('Form Submission:', bidData);
   
-    // Example: Send bid data to the server
-    fetch('http://localhost:9000/bit-collection', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bidData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        if (data.email && data.jobId) {
-          // If data contains existing request, handle it
-          alert('Bid already placed for this job:', JSON.stringify(data));
-        } else {
-          // If the insertion was successful, show success message
-          alert('Bid placed successfully:', JSON.stringify(data));
-        }
-        e.target.reset();
-        setStartDate(new Date());
-      })
-      .catch((error) => {
-        console.error('Error placing bid:', error);
-      });
+    // // Example: Send bid data to the server
+    // fetch('http://localhost:9000/bit-collection', {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(bidData),
+    // })
+    //   .then((response) => response.json())
+    //   .then((data) => {
+    //     if (data.email && data.jobId) {
+    //       // If data contains existing request, handle it
+    //       alert('Bid already placed for this job:', JSON.stringify(data));
+    //     } else {
+    //       // If the insertion was successful, show success message
+    //       alert('Bid placed successfully:', JSON.stringify(data));
+    //       nav("/my-bids")
+    //     }
+    //     e.target.reset();
+    //     setStartDate(new Date());
+    //   })
+    //   .catch((error) => {
+    //     console.error('Error placing bid:', error);
+    //   });
+
+  
+
+// Example: Send bid data to the server
+axios
+  .post('http://localhost:9000/bit-collection', bidData)
+  .then((response) => {
+    const data = response.data;
+    
+
+    if (data.email && data.jobId) {
+      // If data contains existing request, handle it
+      alert('Bid already placed for this job:', JSON.stringify(data));
+    } else {
+      // If the insertion was successful, show success message
+      alert('Bid placed successfully:', JSON.stringify(data));
+      nav("/my-bids");
+    }
+
+    e.target.reset();
+    setStartDate(new Date());
+ 
+  })
+  .catch((error) => {
+    console.error('Error placing bid:', error.message);
+  });
+
   };
   
 

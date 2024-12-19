@@ -1,11 +1,28 @@
+import axios from "axios"
+import { useContext, useEffect, useState } from "react"
+import { AuthContext } from "../providers/AuthProvider"
+
 const MyBids = () => {
+
+
+  let {user}=useContext(AuthContext)
+
+
+  let [myBids,setMyBits]= useState([])
+
+  useEffect(()=>{
+
+    axios.get(`http://localhost:9000/bit-collection/${user?.email}`)
+    .then(data=>setMyBits(data.data))
+
+  },[])
   return (
     <section className='container px-4 mx-auto my-12 overflow-x-hidden'>
       <div className='flex items-center gap-x-3'>
         <h2 className='text-lg font-medium text-gray-800 '>My Bids</h2>
 
         <span className='px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full '>
-          6 Bid
+          {myBids.length} Bid
         </span>
       </div>
 

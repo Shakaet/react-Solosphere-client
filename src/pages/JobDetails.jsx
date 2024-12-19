@@ -1,16 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { useParams } from 'react-router-dom'
 import { format } from 'date-fns';
+import { AuthContext } from '../providers/AuthProvider';
 
 const JobDetails = () => {
+  let {user}= useContext(AuthContext)
   const [startDate, setStartDate] = useState(new Date())
 
 
   let {id}= useParams()
   console.log(id)
+  // console.log(user.email)
+
 
 
   let [detailsData,setDetailsData]=useState([])
@@ -23,6 +27,77 @@ const JobDetails = () => {
   },[id])
 
   console.log(detailsData)
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+  
+    // Extract form values
+    const price = formData.get('price');
+    const email=e.target.email.value 
+    console.log(email)
+    const comment = formData.get('comment');
+    const selectedDeadline = startDate;
+  
+    // Validate price
+    const minPrice = Number(detailsData.minPrice);
+    const maxPrice = Number(detailsData.maxPrice);
+    if (!price || isNaN(price) || Number(price) < minPrice || Number(price) > maxPrice) {
+      alert(`Please enter a valid price between ${minPrice} and ${maxPrice}.`);
+      return;
+    }
+  
+    // Validate deadline
+    const jobDeadline = new Date(detailsData.deadline); // Job's deadline
+    // const today = new Date();
+    // if (!selectedDeadline || selectedDeadline <= today) {
+    //   alert('Please select a valid future date for the deadline.');
+    //   return;
+    // }
+    if (selectedDeadline > jobDeadline) {
+      alert(`Your selected deadline cannot exceed the job's deadline: ${format(jobDeadline, 'MM/dd/yyyy')}`);
+      return;
+    }
+  
+    // If all validations pass, proceed to submit the data
+    const bidData = {
+      price: Number(price),
+      email,
+      comment,
+      deadline: format(selectedDeadline, 'MM/dd/yyyy'),
+      jobId:id,
+      jobTitle:detailsData.jobTitle,
+      category:detailsData.category,
+    };
+  
+    console.log('Form Submission:', bidData);
+  
+    // Example: Send bid data to the server
+    fetch('http://localhost:9000/bit-collection', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bidData),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.email && data.jobId) {
+          // If data contains existing request, handle it
+          alert('Bid already placed for this job:', JSON.stringify(data));
+        } else {
+          // If the insertion was successful, show success message
+          alert('Bid placed successfully:', JSON.stringify(data));
+        }
+        e.target.reset();
+        setStartDate(new Date());
+      })
+      .catch((error) => {
+        console.error('Error placing bid:', error);
+      });
+  };
+  
+
 
   // let {name,email,photo,jobTitle,emailW,deadline,category,minPrice,maxPrice,description,TotalBides}=detailsData
 
@@ -75,7 +150,7 @@ const JobDetails = () => {
             </div>
           </div>
           <p className='mt-6 text-lg font-bold text-gray-600 '>
-            Range: $500 - $600
+            Range: {detailsData.minPrice} - {detailsData.maxPrice}
           </p>
         </div>
       </div>
@@ -85,7 +160,7 @@ const JobDetails = () => {
           Place A Bid
         </h2>
 
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className='grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2'>
             <div>
               <label className='text-gray-700 ' htmlFor='price'>
@@ -101,16 +176,17 @@ const JobDetails = () => {
             </div>
 
             <div>
-              <label className='text-gray-700 ' htmlFor='emailAddress'>
+              <label className='text-gray-700 ' >
                 Email Address
               </label>
               <input
-                id='emailAddress'
-                type='email'
-                name='email'
-                disabled
-                className='block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring'
-              />
+              defaultValue={user.email}
+              type='email'
+              name='email' 
+              disabled
+              className='block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md   focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40  focus:outline-none focus:ring'
+            />
+
             </div>
 
             <div>

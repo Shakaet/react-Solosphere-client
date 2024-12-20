@@ -3,19 +3,42 @@ import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import 'react-tabs/style/react-tabs.css'
 import JobCard from './JobCard'
 import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 
 const TabCategories = () => {
 
 
 
-  let [data,setData]=useState([])
+  // let [data,setData]=useState([])
 
 
-  useEffect(()=>{
-    fetch("http://localhost:9000/homeJob")
-    .then(res=>res.json())
-    .then(data=>setData(data))
-  },[])
+  // useEffect(()=>{
+  //   fetch("http://localhost:9000/homeJob")
+  //   .then(res=>res.json())
+  //   .then(data=>setData(data))
+  // },[])
+
+  const {data: data,isLoading,error} = useQuery({ queryKey: ['jobs'], queryFn: async()=>{
+    let {data}= await axios.get('http://localhost:9000/homeJob')
+    return data
+
+
+  }, })
+  console.log(data,isLoading,error)
+
+  if(isLoading){
+    return <span className="loading loading-spinner loading-lg"></span>
+  }
+  
+
+  // const { data: newData = [], isLoading, error } = useQuery({
+  //   queryKey: ['jobs'],
+  //   queryFn: () => axios.get('http://localhost:9000/homeJob').then((res) => res.data),
+  // });
+  
+  // console.log(newData);
+  
   return (
     <Tabs>
       <div className=' container px-6 py-10 mx-auto'>
